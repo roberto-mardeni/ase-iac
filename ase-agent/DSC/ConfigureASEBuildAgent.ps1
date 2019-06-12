@@ -15,7 +15,13 @@ configuration ConfigureASEBuildAgentDsc
         [String]$AseIp,
 
         [Parameter(Mandatory)]
-        [String]$AppDns,
+        [String]$SiteNamePrefix,
+
+        [Parameter(Mandatory)]
+        [int]$SiteCount,
+
+        [Parameter(Mandatory)]
+        [String]$DomainName,
 
         [Parameter(Mandatory=$false)]
         [String]$VSTSAgentUrl = "https://vstsagentpackage.azureedge.net/agent/2.152.1/vsts-agent-win-x64-2.152.1.zip"
@@ -23,10 +29,6 @@ configuration ConfigureASEBuildAgentDsc
     
     Import-DscResource -ModuleName xNetworking, 'PSDesiredStateConfiguration'
 
-    $tmp = $AppDns.Split('.')
-    $OFS='.'
-    $AppScmDns = $tmp[0] + ".scm." + [String]$tmp[1..$tmp.Count]
-	
     Node localhost
     {                
         Script DownloadAgent
@@ -45,7 +47,6 @@ configuration ConfigureASEBuildAgentDsc
                 Test-Path $agentZip
             }
         }
-
 
         Script UnzipAgent
         {
@@ -73,7 +74,6 @@ configuration ConfigureASEBuildAgentDsc
             DependsOn = "[Script]DownloadAgent"
         }
 
-
         Script ConfigAgent
         {
             GetScript = { return @{ 'Result' = $true }}
@@ -91,18 +91,20 @@ configuration ConfigureASEBuildAgentDsc
             DependsOn = "[Script]UnzipAgent"
         }
 
-        xHostsFile HostEntry
-        {
-            HostName  = $AppDns
-            IPAddress = $AseIp
-            Ensure    = 'Present'
-        }
-
-        xHostsFile HostScmEntry
-        {
-            HostName  = $AppScmDns
-            IPAddress = $AseIp
-            Ensure    = 'Present'
+        for ($i = 1; $i -le $SiteCount; $i++) {
+            xHostsFile "HostEntry$i"
+            {
+                HostName  = "$($SiteNamePrefix).$($DomainName)"
+                IPAddress = $AseIp
+                Ensure    = 'Present'
+            }
+    
+            xHostsFile "HostScmEntry$i"
+            {
+                HostName  = "$($SiteNamePrefix).scm.$($DomainName)"
+                IPAddress = $AseIp
+                Ensure    = 'Present'
+            }
         }
 
         Registry StrongCrypto1

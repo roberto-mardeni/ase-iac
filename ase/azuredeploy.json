@@ -36,9 +36,16 @@
             "type": "string",
             "defaultValue": "GENERATE"
         },
-        "aseSiteName": {
+        "aseSiteNamePrefix": {
             "type": "string",
-            "defaultValue": "ase-site"
+            "defaultValue": "asesite"
+        },
+        "aseSiteCount": {
+            "type": "int",
+            "defaultValue": 1,
+            "metadata": {
+                "description": "Defines the number of sites that will be created in the app service plan."
+            }
         },
         "pricingTier": {
             "type": "string",
@@ -222,18 +229,22 @@
         },
         {
             "apiVersion": "2016-08-01",
-            "name": "[parameters('aseSiteName')]",
+            "name": "[concat(parameters('aseSiteNamePrefix'), copyIndex())]",
             "type": "Microsoft.Web/sites",
             "location": "[variables('locationLUT')[resourceGroup().location]]",
             "dependsOn": [
                 "[concat('Microsoft.Web/serverFarms/', variables('appServicePlanName'))]"
             ],
             "properties": {
-                "name": "[parameters('aseSiteName')]",
+                "name": "[concat(parameters('aseSiteNamePrefix'), copyIndex())]",
                 "serverFarmId": "[resourceId('Microsoft.Web/serverFarms', variables('appServicePlanName'))]",
                 "hostingEnvironmentProfile": {
                     "id": "[resourceId('Microsoft.Web/hostingEnvironments', variables('aseName'))]"
                 }
+            },
+            "copy": {
+                "name": "ase-sites",
+                "count": "[parameters('aseSiteCount')]"
             }
         }
     ]

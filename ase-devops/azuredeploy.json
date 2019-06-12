@@ -49,9 +49,13 @@
             "type": "string",
             "defaultValue": "GENERATE"
         },
-        "siteName": {
+        "siteNamePrefix": {
             "type": "string",
-            "defaultValue": "ase-site"
+            "defaultValue": "asesite"
+        },
+        "siteCount": {
+            "type": "int",
+            "defaultValue": 1
         },
         "TSServerUrl": {
             "type": "string"
@@ -84,7 +88,6 @@
         "subnetId2": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')), '/subnets/', variables('subnetName2'))]",
         "jumpVmName": "JumpBox",
         "buildAgentVmName": "build-agent",
-        "AppDns": "[concat(parameters('siteName'),'.',parameters('domainName'))]",
         "AseIp": "10.0.1.11"
     },
     "resources": [
@@ -177,9 +180,6 @@
                     "AseIp": {
                         "value": "[variables('AseIp')]"
                     },
-                    "AppDns": {
-                        "value": "[variables('AppDns')]"
-                    },
                     "vmName": {
                         "value": "[variables('buildAgentVmName')]"
                     },
@@ -194,6 +194,15 @@
                     },
                     "adminPassword": {
                         "value": "[parameters('adminPassword')]"
+                    },
+                    "SiteNamePrefix": {
+                        "value": "[parameters('SiteNamePrefix')]"
+                    },
+                    "SiteCount": {
+                        "value": "[parameters('SiteCount')]"
+                    },
+                    "DomainName": {
+                        "value": "[parameters('DomainName')]"
                     }
                 }
             }
@@ -221,8 +230,11 @@
                     "aseName": {
                         "value": "[parameters('aseName')]"
                     },
-                    "aseSiteName": {
-                        "value": "[parameters('siteName')]"
+                    "aseSiteNamePrefix": {
+                        "value": "[parameters('siteNamePrefix')]"
+                    },
+                    "aseSiteCount": {
+                        "value": "[parameters('siteCount')]"
                     },
                     "pfxBlobString": {
                         "value": "[parameters('pfxBlobString')]"

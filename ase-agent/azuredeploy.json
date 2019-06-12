@@ -56,7 +56,13 @@
         "AseIp": {
             "type": "string"
         },
-        "AppDns": {
+        "SiteNamePrefix": {
+            "type": "string"
+        },
+        "SiteCount": {
+            "type": "int"
+        },
+        "DomainName": {
             "type": "string"
         }
     },
@@ -132,7 +138,9 @@
                         "AgentPool": "[parameters('AgentPool')]",
                         "PAToken": "[parameters('PAToken')]",
                         "AseIp": "[parameters('AseIp')]",
-                        "AppDns": "[parameters('AppDns')]"
+                        "SiteNamePrefix": "[parameters('SiteNamePrefix')]",
+                        "SiteCount": "[parameters('SiteCount')]",
+                        "DomainName": "[parameters('DomainName')]"
                     }
                 }
             }

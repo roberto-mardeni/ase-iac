@@ -75,6 +75,7 @@
         "genVnetid": "[resourceId('Microsoft.Network/virtualNetworks', variables('genVnetName'))]",
         "genVnetSubnetName1": "default",
         "genVnetSubnetName2": "ase-subnet",
+        "genVnetSubnetName3": "subnet-gateway",
         "genSubnetId1": "[concat(variables('genVnetid'), '/subnets/', variables('genVnetSubnetName1'))]",
         "genSubnetId2": "[concat(variables('genVnetid'), '/subnets/', variables('genVnetSubnetName2'))]",
         "subnetId": "[if(equals(parameters('subnetId'),'null'), variables('genSubnetId2'), parameters('subnetId'))]",
@@ -143,6 +144,12 @@
                         "name": "[variables('genVnetSubnetName2')]",
                         "properties": {
                             "addressPrefix": "10.0.1.0/25"
+                        }
+                    },
+                    {
+                        "name": "[variables('genVnetSubnetName3')]",
+                        "properties": {
+                            "addressPrefix": "10.0.2.0/25"
                         }
                     }
                 ]

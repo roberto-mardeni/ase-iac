@@ -1,0 +1,289 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "gatewayName": {
+      "type": "string",
+      "defaultValue": "ase-ag"
+    },
+    "gatewaySku": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_Small",
+        "Standard_Medium",
+        "Standard_Large",
+        "WAF_Medium",
+        "WAF_Large",
+        "Standard_v2",
+        "WAF_v2"
+      ],
+      "defaultValue": "Standard_Small"
+    },
+    "gatewayTier": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "WAF",
+        "Standard_v2",
+        "WAF_v2"
+      ],
+      "defaultValue": "Standard"
+    },
+    "gatewayCapacity": {
+      "type": "int",
+      "defaultValue": 1
+    },
+    "authCertName": {
+      "type": "string",
+      "defaultValue": "default"
+    },
+    "authCertBlobString": {
+      "type": "string",
+      "defaultValue": null
+    },
+    "publicCertName": {
+      "type": "string",
+      "defaultValue": "default"
+    },
+    "publicCertBlobString": {
+      "type": "string",
+      "defaultValue": null
+    },
+    "gatewayPublicIpAddressName": {
+      "type": "string",
+      "defaultValue": "ase-ag-pip"
+    },
+    "gatewayPublicIpAddressSku": {
+      "type": "string",
+      "allowedValues": [
+        "Basic",
+        "Standard"
+      ],
+      "defaultValue": "Basic"
+    },
+    "gatewayPublicIpAddressLabel": {
+      "type": "securestring",
+      "defaultValue": null
+    },
+    "gatewayPublicIpAddressVersion": {
+      "type": "string",
+      "allowedValues": [
+        "IPv4",
+        "IPv6"
+      ],
+      "defaultValue": "IPv4"
+    },
+    "gatewayPublicIpAddressAllocation": {
+      "type": "string",
+      "allowedValues": [
+        "Dynamic",
+        "Static"
+      ],
+      "defaultValue": "Dynamic"
+    },
+    "virtualNetworkName": {
+      "type": "string",
+      "defaultValue": "ase-vnet"
+    },
+    "subnetName": {
+      "type": "string",
+      "defaultValue": "subnet-gateway"
+    },
+    "aseIpAddress": {
+      "type": "string",
+      "defaultValue": "10.0.1.11"
+    },
+    "siteNamePrefix": {
+      "type": "string",
+      "defaultValue": "asesite"
+    },
+    "siteCount": {
+      "type": "int",
+      "defaultValue": 1
+    },
+    "domainName": {
+      "type": "string",
+      "defaultValue": null
+    }
+  },
+  "variables": {},
+  "resources": [{
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2019-04-01",
+      "name": "[parameters('gatewayPublicIpAddressName')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "[parameters('gatewayPublicIpAddressSku')]",
+        "tier": "Regional"
+      },
+      "properties": {
+        "publicIPAddressVersion": "[parameters('gatewayPublicIpAddressVersion')]",
+        "publicIPAllocationMethod": "[parameters('gatewayPublicIpAddressAllocation')]",
+        "idleTimeoutInMinutes": 4,
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('gatewayPublicIpAddressLabel')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/applicationGateways",
+      "apiVersion": "2019-04-01",
+      "name": "[parameters('gatewayName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('gatewayPublicIpAddressName'))]"
+      ],
+      "properties": {
+        "sku": {
+          "name": "[parameters('gatewaySku')]",
+          "tier": "[parameters('gatewayTier')]",
+          "capacity": "[parameters('gatewayCapacity')]"
+        },
+        "gatewayIPConfigurations": [{
+          "name": "appGatewayIpConfig",
+          "properties": {
+            "subnet": {
+              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
+            }
+          },
+          "type": "Microsoft.Network/applicationGateways/gatewayIPConfigurations"
+        }],
+        "sslCertificates": [{
+          "name": "[parameters('publicCertName')]",
+          "properties": {
+            "publicCertData": "[parameters('publicCertBlobString')]"
+          },
+          "type": "Microsoft.Network/applicationGateways/sslCertificates"
+        }],
+        "authenticationCertificates": [{
+            "name": "[parameters('authCertName')]",
+            "properties": {
+              "data": "[parameters('authCertBlobString')]"
+            },
+            "type": "Microsoft.Network/applicationGateways/authenticationCertificates"
+          }
+        ],
+        "frontendIPConfigurations": [{
+          "name": "appGwPublicFrontendIp",
+          "type": "Microsoft.Network/applicationGateways/frontendIPConfigurations",
+          "properties": {
+            "privateIPAllocationMethod": "Dynamic",
+            "publicIPAddress": {
+              "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('gatewayPublicIpAddressName'))]"
+            }
+          }
+        }],
+        "frontendPorts": [{
+          "name": "port_443",
+          "properties": {
+            "port": 443
+          },
+          "type": "Microsoft.Network/applicationGateways/frontendPorts"
+        }],
+        "backendAddressPools": [{
+          "name": "aseBackendPool",
+          "properties": {
+            "backendAddresses": [{
+              "fqdn": "[parameters('aseIpAddress')]"
+            }]
+          },
+          "type": "Microsoft.Network/applicationGateways/backendAddressPools"
+        }],
+        "backendHttpSettingsCollection": [{
+          "name": "[concat('httpsSettings', copyIndex())]",
+          "properties": {
+            "port": 443,
+            "protocol": "Https",
+            "cookieBasedAffinity": "Disabled",
+            "pickHostNameFromBackendAddress": false,
+            "affinityCookieName": "ApplicationGatewayAffinity",
+            "path": "/",
+            "requestTimeout": 20,
+            "probe": {
+              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/probes/site', copyIndex(), 'HttpsHealthProbe')]"
+            },
+            "authenticationCertificates": [{
+              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/authenticationCertificates/', parameters('authCertName'))]"
+            }]
+          },
+          "type": "Microsoft.Network/applicationGateways/backendHttpSettingsCollection",
+          "copy": {
+            "name": "backendHttpSettingsCollection",
+            "count": "[parameters('siteCount')]"
+          }
+        }],
+        "httpListeners": [{
+          "name": "[concat('site', copyIndex() ,'HttpsListener')]",
+          "properties": {
+            "frontendIPConfiguration": {
+              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+            },
+            "frontendPort": {
+              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/frontendPorts/port_443')]"
+            },
+            "protocol": "Https",
+            "sslCertificate": {
+              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/sslCertificates/', parameters('publicCertName'))]"
+            },
+            "hostName": "[concat(parameters('siteNamePrefix'), copyIndex() , parameters('domainName'))]",
+            "requireServerNameIndication": false
+          },
+          "type": "Microsoft.Network/applicationGateways/httpListeners",
+          "copy": {
+            "name": "httpListeners",
+            "count": "[parameters('siteCount')]"
+          }
+        }],
+        "urlPathMaps": [],
+        "requestRoutingRules": [{
+            "name": "[concat('rule', copyIndex())]",
+            "properties": {
+              "ruleType": "Basic",
+              "httpListener": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/httpListeners/site', copyIndex(), 'HttpsListener')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/backendAddressPools/aseBackendPool')]"
+              },
+              "backendHttpSettings": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/backendHttpSettingsCollection/httpsSettings', copyIndex())]"
+              }
+            },
+            "type": "Microsoft.Network/applicationGateways/requestRoutingRules",
+            "copy": {
+              "name": "requestRoutingRules",
+              "count": "[parameters('siteCount')]"
+            }
+          }
+        ],
+        "probes": [{
+            "name": "[concat('site', copyIndex(), 'HttpsHealthProbe')]",
+            "properties": {
+              "protocol": "Https",
+              "host": "[concat(parameters('siteNamePrefix'), copyIndex() , parameters('domainName'))]",
+              "path": "/",
+              "interval": 30,
+              "timeout": 30,
+              "unhealthyThreshold": 3,
+              "pickHostNameFromBackendHttpSettings": false,
+              "minServers": 0,
+              "match": {
+                "statusCodes": [
+                  "200-399"
+                ]
+              }
+            },
+            "type": "Microsoft.Network/applicationGateways/probes",
+            "copy": {
+              "name": "probes",
+              "count": "[parameters('siteCount')]"
+            }
+          }
+        ],
+        "rewriteRuleSets": [],
+        "redirectConfigurations": [],
+        "enableHttp2": false
+      }
+    }
+  ]
+}

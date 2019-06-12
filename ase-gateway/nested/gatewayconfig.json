@@ -1,0 +1,117 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "gatewayName": {
+      "type": "string",
+      "defaultValue": "ase-ag"
+    },
+    "authCertName": {
+      "type": "string",
+      "defaultValue": "default"
+    },
+    "publicCertName": {
+      "type": "string",
+      "defaultValue": "default"
+    },
+    "siteName": {
+      "type": "string",
+      "defaultValue": "asesite1"
+    },
+    "domainName": {
+      "type": "string",
+      "defaultValue": null
+    },
+    "siteNumber": {
+      "type": "int",
+      "defaultValue": 1
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Network/applicationGateways",
+      "apiVersion": "2019-04-01",
+      "name": "[parameters('gatewayName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [],
+      "properties": {
+        "backendHttpSettingsCollection": [{
+          "name": "[concat('httpsSettings', parameters('siteNumber'))]",
+          "properties": {
+            "port": 443,
+            "protocol": "Https",
+            "cookieBasedAffinity": "Disabled",
+            "pickHostNameFromBackendAddress": false,
+            "affinityCookieName": "ApplicationGatewayAffinity",
+            "path": "/",
+            "requestTimeout": 20,
+            "probe": {
+              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/probes/site', parameters('siteNumber'), 'HttpsHealthProbe')]"
+            },
+            "authenticationCertificates": [{
+              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/authenticationCertificates/', parameters('authCertName'))]"
+            }]
+          },
+          "type": "Microsoft.Network/applicationGateways/backendHttpSettingsCollection"
+        }],
+        "httpListeners": [{
+          "name": "[concat('site', parameters('siteNumber'),'HttpsListener')]",
+          "properties": {
+            "frontendIPConfiguration": {
+              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+            },
+            "frontendPort": {
+              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/frontendPorts/port_443')]"
+            },
+            "protocol": "Https",
+            "sslCertificate": {
+              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/sslCertificates/', parameters('publicCertName'))]"
+            },
+            "hostName": "[concat(parameters('siteName'), '.', parameters('domainName'))]",
+            "requireServerNameIndication": false
+          },
+          "type": "Microsoft.Network/applicationGateways/httpListeners"
+        }],
+        "urlPathMaps": [],
+        "requestRoutingRules": [{
+            "name": "[concat('rule', parameters('siteNumber'))]",
+            "properties": {
+              "ruleType": "Basic",
+              "httpListener": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/httpListeners/site', parameters('siteNumber'), 'HttpsListener')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/backendAddressPools/aseBackendPool')]"
+              },
+              "backendHttpSettings": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('gatewayName')), '/backendHttpSettingsCollection/httpsSettings', parameters('siteNumber'))]"
+              }
+            },
+            "type": "Microsoft.Network/applicationGateways/requestRoutingRules"
+          }
+        ],
+        "probes": [{
+            "name": "[concat('site', parameters('siteNumber'), 'HttpsHealthProbe')]",
+            "properties": {
+              "protocol": "Https",
+              "host": "[concat(parameters('siteName'), '.', parameters('domainName'))]",
+              "path": "/",
+              "interval": 30,
+              "timeout": 30,
+              "unhealthyThreshold": 3,
+              "pickHostNameFromBackendHttpSettings": false,
+              "minServers": 0,
+              "match": {
+                "statusCodes": [
+                  "200-399"
+                ]
+              }
+            },
+            "type": "Microsoft.Network/applicationGateways/probes"
+          }
+        ]
+      }
+    }
+  ]
+}

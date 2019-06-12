@@ -2,6 +2,10 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "vnetName": {
+            "type": "string",
+            "defaultValue": "ase-vnet"
+        },
         "jumpvmSize": {
             "type": "string",
             "allowedValues": [
@@ -81,18 +85,17 @@
         "windowsVmTemplateURL": "[uri(variables('baseUri'),'../primitives/windowsvm.json')]",
         "agentTemplateURL": "[uri(variables('baseUri'),'../ase-agent/azuredeploy.json')]",
         "aseTemplateURL": "[uri(variables('baseUri'),'../ase/azuredeploy.json')]",
-        "vnetName": "asevnet",
         "subnetName1": "subnet-1",
         "subnetName2": "subnet-2",
-        "subnetId1": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')), '/subnets/', variables('subnetName1'))]",
-        "subnetId2": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')), '/subnets/', variables('subnetName2'))]",
+        "subnetId1": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '/subnets/', variables('subnetName1'))]",
+        "subnetId2": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '/subnets/', variables('subnetName2'))]",
         "jumpVmName": "JumpBox",
         "buildAgentVmName": "build-agent",
         "AseIp": "10.0.1.11"
     },
     "resources": [
         {
-            "name": "[variables('vnetName')]",
+            "name": "[parameters('vnetName')]",
             "type": "Microsoft.Network/virtualNetworks",
             "location": "[resourceGroup().location]",
             "apiVersion": "2016-03-30",
@@ -124,7 +127,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2017-05-10",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks',parameters('vnetName'))]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -159,7 +162,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2017-05-10",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks',parameters('vnetName'))]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -212,7 +215,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2017-05-10",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks',parameters('vnetName'))]"
             ],
             "properties": {
                 "mode": "Incremental",

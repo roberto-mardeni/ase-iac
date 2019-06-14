@@ -36,16 +36,13 @@
             "type": "string",
             "defaultValue": "GENERATE"
         },
-        "aseSiteNamePrefix": {
+        "aseSite1Name": {
             "type": "string",
-            "defaultValue": "asesite"
+            "defaultValue": "asesite1"
         },
-        "aseSiteCount": {
-            "type": "int",
-            "defaultValue": 1,
-            "metadata": {
-                "description": "Defines the number of sites that will be created in the app service plan."
-            }
+        "aseSite2Name": {
+            "type": "string",
+            "defaultValue": "asesite2"
         },
         "pricingTier": {
             "type": "string",
@@ -76,7 +73,6 @@
         "genVnetSubnetName1": "default",
         "genVnetSubnetName2": "ase-subnet",
         "genVnetSubnetName3": "subnet-gateway",
-        "genSubnetId1": "[concat(variables('genVnetid'), '/subnets/', variables('genVnetSubnetName1'))]",
         "genSubnetId2": "[concat(variables('genVnetid'), '/subnets/', variables('genVnetSubnetName2'))]",
         "subnetId": "[if(equals(parameters('subnetId'),'null'), variables('genSubnetId2'), parameters('subnetId'))]",
         "lastSlash": "[lastIndexOf(variables('subnetId'),'/')]",
@@ -236,22 +232,34 @@
         },
         {
             "apiVersion": "2016-08-01",
-            "name": "[concat(parameters('aseSiteNamePrefix'), copyIndex())]",
+            "name": "[parameters('aseSite1Name')]",
             "type": "Microsoft.Web/sites",
             "location": "[variables('locationLUT')[resourceGroup().location]]",
             "dependsOn": [
                 "[concat('Microsoft.Web/serverFarms/', variables('appServicePlanName'))]"
             ],
             "properties": {
-                "name": "[concat(parameters('aseSiteNamePrefix'), copyIndex())]",
+                "name": "[parameters('aseSite1Name')]",
                 "serverFarmId": "[resourceId('Microsoft.Web/serverFarms', variables('appServicePlanName'))]",
                 "hostingEnvironmentProfile": {
                     "id": "[resourceId('Microsoft.Web/hostingEnvironments', variables('aseName'))]"
                 }
-            },
-            "copy": {
-                "name": "ase-sites",
-                "count": "[parameters('aseSiteCount')]"
+            }
+        },
+        {
+            "apiVersion": "2016-08-01",
+            "name": "[parameters('aseSite2Name')]",
+            "type": "Microsoft.Web/sites",
+            "location": "[variables('locationLUT')[resourceGroup().location]]",
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverFarms/', variables('appServicePlanName'))]"
+            ],
+            "properties": {
+                "name": "[parameters('aseSite2Name')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverFarms', variables('appServicePlanName'))]",
+                "hostingEnvironmentProfile": {
+                    "id": "[resourceId('Microsoft.Web/hostingEnvironments', variables('aseName'))]"
+                }
             }
         }
     ]

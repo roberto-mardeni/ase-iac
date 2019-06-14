@@ -56,11 +56,8 @@
         "AseIp": {
             "type": "string"
         },
-        "SiteNamePrefix": {
+        "SiteList": {
             "type": "string"
-        },
-        "SiteCount": {
-            "type": "int"
         },
         "DomainName": {
             "type": "string"
@@ -138,8 +135,7 @@
                         "AgentPool": "[parameters('AgentPool')]",
                         "PAToken": "[parameters('PAToken')]",
                         "AseIp": "[parameters('AseIp')]",
-                        "SiteNamePrefix": "[parameters('SiteNamePrefix')]",
-                        "SiteCount": "[parameters('SiteCount')]",
+                        "SiteList": "[parameters('SiteList')]",
                         "DomainName": "[parameters('DomainName')]"
                     }
                 }

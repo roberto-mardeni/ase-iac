@@ -42,15 +42,25 @@ if ([String]::IsNullOrEmpty($CertificatePath)) {
     Export-PfxCertificate -cert $certThumbprint -FilePath $CertificatePath -Password $CertificatePassword
 } else {
     $certificate = Import-PfxCertificate -CertStoreLocation Cert:\LocalMachine\My -FilePath $CertificatePath -Password $CertificatePassword
-    $certThumbprint = "cert:\localMachine\my\" + $certificate.Thumbprint    
+    $certThumbprint = "cert:\localMachine\my\" + $certificate.Thumbprint
 }
 
 $fileContentBytes = Get-Content $CertificatePath -Encoding Byte
 $pfxBlobString = [System.Convert]::ToBase64String($fileContentBytes)
 
+$PublicCertificatePath = "$($CertificatePath).cer"
+
+Export-Certificate -FilePath $PublicCertificatePath -Type CERT -Cert $certificate
+
+$fileContentBytes = Get-Content $PublicCertificatePath -Encoding Byte
+$cerBlobString = [System.Convert]::ToBase64String($fileContentBytes)
+
 $templateParameters = @{
     "pfxBlobString" = @{
         "value" = $pfxBlobString
+    }
+    "cerBlobString" = @{
+        "value" = $cerBlobString
     }
     "certificatePassword" = @{
         "value" = (New-Object PSCredential "user", $CertificatePassword).GetNetworkCredential().Password

@@ -53,13 +53,13 @@
             "type": "string",
             "defaultValue": "GENERATE"
         },
-        "siteNamePrefix": {
+        "site1Name": {
             "type": "string",
-            "defaultValue": "asesite"
+            "defaultValue": "asesite1"
         },
-        "siteCount": {
-            "type": "int",
-            "defaultValue": 1
+        "site2Name": {
+            "type": "string",
+            "defaultValue": "asesite2"
         },
         "TSServerUrl": {
             "type": "string"
@@ -69,8 +69,11 @@
         },
         "PAToken": {
             "type": "string"
-        },        
+        },
         "pfxBlobString": {
+            "type": "string"
+        },
+        "cerBlobString": {
             "type": "string"
         },
         "certificatePassword": {
@@ -78,6 +81,37 @@
         },
         "certificateThumbprint": {
             "type": "string"
+        },
+        "gatewayName": {
+            "type": "string",
+            "defaultValue": "ase-gateway"
+        },
+        "gatewaySku": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_Small",
+                "Standard_Medium",
+                "Standard_Large",
+                "WAF_Medium",
+                "WAF_Large",
+                "Standard_v2",
+                "WAF_v2"
+            ],
+            "defaultValue": "Standard_Small"
+        },
+        "gatewayTier": {
+            "type": "string",
+            "allowedValues": [
+                "Standard",
+                "WAF",
+                "Standard_v2",
+                "WAF_v2"
+            ],
+            "defaultValue": "Standard"
+        },
+        "gatewayCapacity": {
+            "type": "int",
+            "defaultValue": 1
         }
     },
     "variables": {
@@ -85,6 +119,7 @@
         "windowsVmTemplateURL": "[uri(variables('baseUri'),'../primitives/windowsvm.json')]",
         "agentTemplateURL": "[uri(variables('baseUri'),'../ase-agent/azuredeploy.json')]",
         "aseTemplateURL": "[uri(variables('baseUri'),'../ase/azuredeploy.json')]",
+        "gatewayTemplateURL": "[uri(variables('baseUri'),'../ase-gateway/azuredeploy.json')]",
         "subnetName1": "subnet-1",
         "subnetName2": "subnet-2",
         "subnetId1": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '/subnets/', variables('subnetName1'))]",
@@ -93,8 +128,7 @@
         "buildAgentVmName": "build-agent",
         "AseIp": "10.0.1.11"
     },
-    "resources": [
-        {
+    "resources": [{
             "name": "[parameters('vnetName')]",
             "type": "Microsoft.Network/virtualNetworks",
             "location": "[resourceGroup().location]",
@@ -106,8 +140,7 @@
                         "10.0.0.0/16"
                     ]
                 },
-                "subnets": [
-                    {
+                "subnets": [{
                         "name": "[variables('subnetName1')]",
                         "properties": {
                             "addressPrefix": "10.0.0.0/24"
@@ -198,11 +231,8 @@
                     "adminPassword": {
                         "value": "[parameters('adminPassword')]"
                     },
-                    "SiteNamePrefix": {
-                        "value": "[parameters('SiteNamePrefix')]"
-                    },
-                    "SiteCount": {
-                        "value": "[parameters('SiteCount')]"
+                    "SiteList": {
+                        "value": "[concat(parameters('Site1Name'),',',parameters('Site2Name'))]"
                     },
                     "DomainName": {
                         "value": "[parameters('DomainName')]"
@@ -233,11 +263,11 @@
                     "aseName": {
                         "value": "[parameters('aseName')]"
                     },
-                    "aseSiteNamePrefix": {
-                        "value": "[parameters('siteNamePrefix')]"
+                    "aseSite1Name": {
+                        "value": "[parameters('site1Name')]"
                     },
-                    "aseSiteCount": {
-                        "value": "[parameters('siteCount')]"
+                    "aseSite2Name": {
+                        "value": "[parameters('site2Name')]"
                     },
                     "pfxBlobString": {
                         "value": "[parameters('pfxBlobString')]"
@@ -247,6 +277,59 @@
                     },
                     "certificateThumbprint": {
                         "value": "[parameters('certificateThumbprint')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "[concat('gateway',resourceGroup().name)]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2017-05-10",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/deployments','ase',resourceGroup().name)]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('gatewayTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "gatewayName": {
+                        "value": "[parameters('gatewayName')]"
+                    },
+                    "gatewaySku": {
+                        "value": "[parameters('gatewaySku')]"
+                    },
+                    "gatewayCapacity": {
+                        "value": "[parameters('gatewayCapacity')]"
+                    },
+                    "gatewayTier": {
+                        "value": "[parameters('gatewayTier')]"
+                    },
+                    "authCertBlobString": {
+                        "value": "[parameters('pfxBlobString')]"
+                    },
+                    "publicCertBlobString": {
+                        "value": "[parameters('cerBlobString')]"
+                    },
+                    "virtualNetworkName": {
+                        "value": "[parameters('vnetName')]"
+                    },
+                    "subnetName": {
+                        "value": "[variables('subnetId1')]"
+                    },
+                    "aseIpAddress": {
+                        "value": "[variables('AseIp')]"
+                    },
+                    "domainName": {
+                        "value": "[parameters('domainName')]"
+                    },
+                    "aseSite1Name": {
+                        "value": "[parameters('site1Name')]"
+                    },
+                    "aseSite2Name": {
+                        "value": "[parameters('site2Name')]"
                     }
                 }
             }

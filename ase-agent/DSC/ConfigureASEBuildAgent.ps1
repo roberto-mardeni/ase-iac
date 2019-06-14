@@ -15,10 +15,7 @@ configuration ConfigureASEBuildAgentDsc
         [String]$AseIp,
 
         [Parameter(Mandatory)]
-        [String]$SiteNamePrefix,
-
-        [Parameter(Mandatory)]
-        [int]$SiteCount,
+        [String]$SiteList,
 
         [Parameter(Mandatory)]
         [String]$DomainName,
@@ -91,17 +88,17 @@ configuration ConfigureASEBuildAgentDsc
             DependsOn = "[Script]UnzipAgent"
         }
 
-        for ($i = 1; $i -le $SiteCount; $i++) {
+        foreach($site in ($SiteList -split ",")) {
             xHostsFile "HostEntry$i"
             {
-                HostName  = "$($SiteNamePrefix).$($DomainName)"
+                HostName  = "$($site).$($DomainName)"
                 IPAddress = $AseIp
                 Ensure    = 'Present'
             }
     
             xHostsFile "HostScmEntry$i"
             {
-                HostName  = "$($SiteNamePrefix).scm.$($DomainName)"
+                HostName  = "$($site).scm.$($DomainName)"
                 IPAddress = $AseIp
                 Ensure    = 'Present'
             }

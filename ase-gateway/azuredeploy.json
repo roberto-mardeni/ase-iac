@@ -61,10 +61,6 @@
       ],
       "defaultValue": "Basic"
     },
-    "gatewayPublicIpAddressLabel": {
-      "type": "string",
-      "defaultValue": ""
-    },
     "gatewayPublicIpAddressVersion": {
       "type": "string",
       "allowedValues": [
@@ -122,10 +118,7 @@
       "properties": {
         "publicIPAddressVersion": "[parameters('gatewayPublicIpAddressVersion')]",
         "publicIPAllocationMethod": "[parameters('gatewayPublicIpAddressAllocation')]",
-        "idleTimeoutInMinutes": 4,
-        "dnsSettings": {
-          "domainNameLabel": "[parameters('gatewayPublicIpAddressLabel')]"
-        }
+        "idleTimeoutInMinutes": 4
       }
     },
     {

@@ -89,14 +89,14 @@ configuration ConfigureASEBuildAgentDsc
         }
 
         foreach($site in ($SiteList -split ",")) {
-            xHostsFile "HostEntry$i"
+            xHostsFile "HostEntry$site"
             {
                 HostName  = "$($site).$($DomainName)"
                 IPAddress = $AseIp
                 Ensure    = 'Present'
             }
     
-            xHostsFile "HostScmEntry$i"
+            xHostsFile "HostScmEntry$site"
             {
                 HostName  = "$($site).scm.$($DomainName)"
                 IPAddress = $AseIp

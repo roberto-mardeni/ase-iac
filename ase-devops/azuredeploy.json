@@ -325,10 +325,10 @@
                     "domainName": {
                         "value": "[parameters('domainName')]"
                     },
-                    "aseSite1Name": {
+                    "site1Name": {
                         "value": "[parameters('site1Name')]"
                     },
-                    "aseSite2Name": {
+                    "site2Name": {
                         "value": "[parameters('site2Name')]"
                     }
                 }

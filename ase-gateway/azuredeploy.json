@@ -41,6 +41,10 @@
       "type": "string",
       "defaultValue": null
     },
+    "authCertPassword": {
+      "type": "securestring",
+      "defaultValue": null
+    },
     "publicCertName": {
       "type": "string",
       "defaultValue": "default"
@@ -138,16 +142,17 @@
           "type": "Microsoft.Network/applicationGateways/gatewayIPConfigurations"
         }],
         "sslCertificates": [{
-          "name": "[parameters('publicCertName')]",
+          "name": "[parameters('authCertName')]",
           "properties": {
-            "publicCertData": "[parameters('publicCertBlobString')]"
+            "publicCertData": "[parameters('authCertBlobString')]",
+            "password": "[parameters('authCertPassword')]"
           },
           "type": "Microsoft.Network/applicationGateways/sslCertificates"
         }],
         "authenticationCertificates": [{
-          "name": "[parameters('authCertName')]",
+          "name": "[parameters('publicCertName')]",
           "properties": {
-            "data": "[parameters('authCertBlobString')]"
+            "data": "[parameters('publicCertBlobString')]"
           },
           "type": "Microsoft.Network/applicationGateways/authenticationCertificates"
         }],

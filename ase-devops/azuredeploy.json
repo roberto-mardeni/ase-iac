@@ -310,6 +310,9 @@
                     "authCertBlobString": {
                         "value": "[parameters('pfxBlobString')]"
                     },
+                    "authCertPassword": {
+                        "value": "[parameters('certificatePassword')]"
+                    },
                     "publicCertBlobString": {
                         "value": "[parameters('cerBlobString')]"
                     },

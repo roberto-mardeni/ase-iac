@@ -13,7 +13,7 @@ A number of parameters (including SSL certificate) are needed for proper deploym
 ```powershell
 scripts\PrepareAseDeployment.ps1 -DomainName mydomain-internal.us `
 -TSServerUrl "https://<VSTSPROJECT>.visualstudio.com" -AdminUsername EnterpriseAdmin`
--AgentPool <NAME OF POOL> -PAToken <PA Token for VSTS/TFS> `
+-AgentPool <NAME OF POOL> -PAToken <PA Token for Azure DevOps> `
 -OutFile C:\temp\myase-devops.parameters.json
 ```
 

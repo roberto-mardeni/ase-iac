@@ -77,13 +77,9 @@
       ],
       "defaultValue": "Dynamic"
     },
-    "virtualNetworkName": {
+    "subnetId": {
       "type": "string",
-      "defaultValue": "ase-vnet"
-    },
-    "subnetName": {
-      "type": "string",
-      "defaultValue": "subnet-1"
+      "defaultValue": null
     },
     "aseIpAddress": {
       "type": "string",
@@ -136,7 +132,7 @@
           "name": "appGatewayIpConfig",
           "properties": {
             "subnet": {
-              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
+              "id": "[parameters('subnetId')]"
             }
           },
           "type": "Microsoft.Network/applicationGateways/gatewayIPConfigurations"

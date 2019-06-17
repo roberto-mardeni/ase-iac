@@ -313,10 +313,7 @@
                     "publicCertBlobString": {
                         "value": "[parameters('cerBlobString')]"
                     },
-                    "virtualNetworkName": {
-                        "value": "[parameters('vnetName')]"
-                    },
-                    "subnetName": {
+                    "subnetId": {
                         "value": "[variables('subnetId1')]"
                     },
                     "aseIpAddress": {

@@ -72,7 +72,7 @@
         "genVnetid": "[resourceId('Microsoft.Network/virtualNetworks', variables('genVnetName'))]",
         "genVnetSubnetName1": "default",
         "genVnetSubnetName2": "ase-subnet",
-        "genVnetSubnetName3": "subnet-gateway",
+        "genVnetSubnetName3": "gateway-subnet",
         "genSubnetId2": "[concat(variables('genVnetid'), '/subnets/', variables('genVnetSubnetName2'))]",
         "subnetId": "[if(equals(parameters('subnetId'),'null'), variables('genSubnetId2'), parameters('subnetId'))]",
         "lastSlash": "[lastIndexOf(variables('subnetId'),'/')]",

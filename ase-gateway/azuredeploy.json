@@ -144,7 +144,7 @@
         "sslCertificates": [{
           "name": "[parameters('authCertName')]",
           "properties": {
-            "publicCertData": "[parameters('authCertBlobString')]",
+            "data": "[parameters('authCertBlobString')]",
             "password": "[parameters('authCertPassword')]"
           },
           "type": "Microsoft.Network/applicationGateways/sslCertificates"

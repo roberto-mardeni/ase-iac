@@ -102,10 +102,7 @@
       "defaultValue": null
     }
   },
-  "variables": {
-    "baseUri": "[deployment().properties.templateLink.uri]",
-    "gatewayConfigTemplateURL": "[uri(variables('baseUri'),'nested/gatewayconfig.json')]"
-  },
+  "variables": {},
   "resources": [{
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2019-04-01",

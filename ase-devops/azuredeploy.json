@@ -122,8 +122,10 @@
         "gatewayTemplateURL": "[uri(variables('baseUri'),'../ase-gateway/azuredeploy.json')]",
         "subnetName1": "subnet-1",
         "subnetName2": "subnet-2",
+        "subnetName3": "subnet-3",
         "subnetId1": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '/subnets/', variables('subnetName1'))]",
         "subnetId2": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '/subnets/', variables('subnetName2'))]",
+        "subnetId3": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '/subnets/', variables('subnetName3'))]",
         "jumpVmName": "JumpBox",
         "buildAgentVmName": "build-agent",
         "AseIp": "10.0.1.11"
@@ -150,6 +152,12 @@
                         "name": "[variables('subnetName2')]",
                         "properties": {
                             "addressPrefix": "10.0.1.0/25"
+                        }
+                    },
+                    {
+                        "name": "[variables('subnetName3')]",
+                        "properties": {
+                            "addressPrefix": "10.0.2.0/25"
                         }
                     }
                 ]
@@ -317,7 +325,7 @@
                         "value": "[parameters('cerBlobString')]"
                     },
                     "subnetId": {
-                        "value": "[variables('subnetId1')]"
+                        "value": "[variables('subnetId3')]"
                     },
                     "aseIpAddress": {
                         "value": "[variables('AseIp')]"
